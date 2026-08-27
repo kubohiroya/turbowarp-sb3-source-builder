@@ -20,7 +20,14 @@ export interface TurboWarpSb3AppSourceOptions {
   stageBackdrop?: StageBackdropSource;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function bytes(value: string | Buffer | Uint8Array): Buffer {
+  if (typeof value !== 'string' && !Buffer.isBuffer(value) && !(value instanceof Uint8Array)) {
+    throw new TypeError('source bytes must be a string, Buffer, or Uint8Array.');
+  }
   return Buffer.isBuffer(value) ? value : Buffer.from(value);
 }
 
@@ -32,15 +39,16 @@ function md5(contents: Buffer): string {
   return createHash('md5').update(contents).digest('hex');
 }
 
-function assertIdentifier(value: string, name: string): string {
-  if (!/^[A-Za-z][A-Za-z0-9_]*$/u.test(value)) {
+function assertIdentifier(value: unknown, name: string): string {
+  if (typeof value !== 'string' || !/^[A-Za-z][A-Za-z0-9_]*$/u.test(value)) {
     throw new TypeError(`${name} must be an ASCII identifier.`);
   }
   return value;
 }
 
-function assertPath(value: string, name: string): string {
+function assertPath(value: unknown, name: string): string {
   if (
+    typeof value !== 'string' ||
     value.length === 0 ||
     value.includes('\0') ||
     value.includes('\\') ||
@@ -48,6 +56,29 @@ function assertPath(value: string, name: string): string {
     value.split('/').some((part) => part.length === 0 || part === '.' || part === '..')
   ) {
     throw new TypeError(`${name} must be a safe relative POSIX path.`);
+  }
+  return value;
+}
+
+function assertNonEmptyString(value: unknown, name: string): string {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new TypeError(`${name} must be a non-empty string.`);
+  }
+  return value;
+}
+
+function validateOptionalString(value: unknown, name: string): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new TypeError(`${name} must be a non-empty string when provided.`);
+  }
+  return value;
+}
+
+function validateParameters(value: unknown): readonly string[] {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || !value.every((item) => typeof item === 'string')) {
+    throw new TypeError('extension.parameters must be a string array when provided.');
   }
   return value;
 }
@@ -62,10 +93,23 @@ function defaultBackdrop(): Buffer {
 export function createTurboWarpSb3AppSourceFiles(
   options: TurboWarpSb3AppSourceOptions
 ): Map<string, Buffer> {
+  if (!isRecord(options)) throw new TypeError('options must be an object.');
+  const agent = assertNonEmptyString(options.agent, 'agent');
+  if (!isRecord(options.extension)) throw new TypeError('extension must be an object.');
+  if (options.stageBackdrop !== undefined && !isRecord(options.stageBackdrop)) {
+    throw new TypeError('stageBackdrop must be an object when provided.');
+  }
   const extensionId = assertIdentifier(options.extension.id, 'extension.id');
   const extensionPath = assertPath(options.extension.path, 'extension.path');
-  const extensionBytes = bytes(options.extension.source);
-  const backdropBytes = bytes(options.stageBackdrop?.svg ?? defaultBackdrop());
+  const extensionBytes = bytes(options.extension.source as string | Buffer | Uint8Array);
+  const backdropBytes = bytes(
+    (options.stageBackdrop?.svg as string | Buffer | Uint8Array | undefined) ?? defaultBackdrop()
+  );
+  const backdropName = validateOptionalString(options.stageBackdrop?.name, 'stageBackdrop.name') ?? 'Title';
+  const mediaType = validateOptionalString(options.extension.mediaType, 'extension.mediaType') ?? 'text/javascript';
+  const parameters = validateParameters(options.extension.parameters);
+  const encoding = options.extension.encoding ?? 'base64';
+  if (encoding !== 'base64') throw new TypeError('extension.encoding must be base64 when provided.');
   const backdropAssetId = md5(backdropBytes);
   const backdropFilename = `${backdropAssetId}.svg`;
 
@@ -83,7 +127,7 @@ export function createTurboWarpSb3AppSourceFiles(
         costumes: [
           {
             assetId: backdropAssetId,
-            name: options.stageBackdrop?.name ?? 'Title',
+            name: backdropName,
             bitmapResolution: 1,
             dataFormat: 'svg',
             md5ext: backdropFilename,
@@ -116,9 +160,9 @@ export function createTurboWarpSb3AppSourceFiles(
       {
         id: extensionId,
         path: extensionPath,
-        mediaType: options.extension.mediaType ?? 'text/javascript',
-        parameters: [...(options.extension.parameters ?? [])],
-        encoding: options.extension.encoding ?? 'base64'
+        mediaType,
+        parameters: [...parameters],
+        encoding
       }
     ]
   };
@@ -128,7 +172,7 @@ export function createTurboWarpSb3AppSourceFiles(
     project: 'project.source.json',
     embeddedExtensions: 'embedded-extensions.json',
     assetsDirectory: 'assets',
-    archiveEntries: ['project.json', backdropFilename]
+    archiveEntries: ['project.json', backdropFilename, 'embedded-extensions.json', extensionPath]
   };
 
   return new Map([
