@@ -11,6 +11,7 @@ It is designed to consume extension bundles produced by repositories based on `t
 - Create minimal Scratch project source objects.
 - Create embedded extension descriptors.
 - Build deterministic source-file maps with `Buffer` values.
+- Keep embedded extension files out of `archiveEntries`; `sb3-toolchain` reads them through `embeddedExtensions` and rebuilds data URLs into `project.json`.
 - Keep app-specific runtime code and block behavior outside this package.
 
 ## Example

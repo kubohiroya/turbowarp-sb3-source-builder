@@ -172,7 +172,7 @@ export function createTurboWarpSb3AppSourceFiles(
     project: 'project.source.json',
     embeddedExtensions: 'embedded-extensions.json',
     assetsDirectory: 'assets',
-    archiveEntries: ['project.json', backdropFilename, 'embedded-extensions.json', extensionPath]
+    archiveEntries: ['project.json', backdropFilename]
   };
 
   return new Map([

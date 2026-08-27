@@ -11,6 +11,7 @@
 - 最小 Scratch project source object を作る。
 - embedded extension descriptor を作る。
 - `Buffer` value を持つ deterministic な source-file map を作る。
+- embedded extension file は `archiveEntries` に入れない。`sb3-toolchain` は `embeddedExtensions` から読み、`project.json` のdata URLとして再構成する。
 - app固有のruntime codeやblock behaviorはこのパッケージに入れない。
 
 ## 例

@@ -22,8 +22,16 @@ describe('createTurboWarpSb3AppSourceFiles', () => {
     expect([...first.keys()]).toEqual([...second.keys()]);
     expect(first.get('project.source.json')?.toString()).toContain('"example3d"');
     expect(first.get('embedded-extensions.json')?.toString()).toContain('extensions/example3d.js');
-    expect(first.get('sb3-source.json')?.toString()).toContain('embedded-extensions.json');
-    expect(first.get('sb3-source.json')?.toString()).toContain('extensions/example3d.js');
+    expect(JSON.parse(first.get('sb3-source.json')?.toString() ?? '')).toMatchObject({
+      embeddedExtensions: 'embedded-extensions.json',
+      archiveEntries: expect.arrayContaining(['project.json'])
+    });
+    expect(JSON.parse(first.get('sb3-source.json')?.toString() ?? '').archiveEntries).not.toContain(
+      'embedded-extensions.json'
+    );
+    expect(JSON.parse(first.get('sb3-source.json')?.toString() ?? '').archiveEntries).not.toContain(
+      'extensions/example3d.js'
+    );
   });
 
   it('rejects malformed public API options before property access', () => {
