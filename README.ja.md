@@ -1,8 +1,8 @@
-# turbowarp-sb3-app-source
+# turbowarp-sb3-source-builder
 
 [English](README.md)
 
-`@kubohiroya/turbowarp-sb3-app-source` は、TurboWarp SB3 application 用の deterministic な source-file map を作ります。
+`@kubohiroya/turbowarp-sb3-source-builder` は、TurboWarp SB3 application 用の deterministic な source-file map を作ります。
 
 `turbowarp-extension-template` ベースのリポジトリで生成した extension bundle を受け取り、`sb3-toolchain` が使う `project.source.json` / `embedded-extensions.json` / `sb3-source.json` の source layout に配置するためのパッケージです。
 
@@ -17,7 +17,7 @@
 ## 例
 
 ```ts
-import {createTurboWarpSb3AppSourceFiles} from '@kubohiroya/turbowarp-sb3-app-source';
+import {createTurboWarpSb3AppSourceFiles} from '@kubohiroya/turbowarp-sb3-source-builder';
 
 const files = createTurboWarpSb3AppSourceFiles({
   agent: 'example-app',

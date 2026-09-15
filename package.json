@@ -1,18 +1,18 @@
 {
-  "name": "@kubohiroya/turbowarp-sb3-app-source",
+  "name": "@kubohiroya/turbowarp-sb3-source-builder",
   "version": "0.1.0",
   "description": "App-neutral SB3 source-file builders for TurboWarp applications.",
   "author": "Hiroya Kubo <hiroya@cuc.ac.jp>",
   "license": "MPL-2.0",
   "type": "module",
   "sideEffects": false,
-  "homepage": "https://github.com/kubohiroya/turbowarp-sb3-app-source#readme",
+  "homepage": "https://github.com/kubohiroya/turbowarp-sb3-source-builder#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kubohiroya/turbowarp-sb3-app-source.git"
+    "url": "git+https://github.com/kubohiroya/turbowarp-sb3-source-builder.git"
   },
   "bugs": {
-    "url": "https://github.com/kubohiroya/turbowarp-sb3-app-source/issues"
+    "url": "https://github.com/kubohiroya/turbowarp-sb3-source-builder/issues"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
